@@ -1,0 +1,482 @@
+{
+  "name": "Fathom Meeting Summary Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "event": "messageReceived",
+        "output": "raw",
+        "filters": {}
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000001",
+      "name": "Outlook Trigger",
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [0, 300],
+      "notes": "Polls every 1 minute for new emails from Fathom"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-filter-sender",
+              "leftValue": "={{ $json.from.emailAddress.address }}",
+              "rightValue": "YOUR_FILTER_EMAIL",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000002",
+      "name": "Filter",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [220, 300],
+      "notes": "Filters emails by sender address - replace YOUR_FILTER_EMAIL with Fathom sender email"
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-1111-4000-8000-000000000003",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 560]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulated Fathom Recap Email for Testing\nconst testEmail = {\n  subject: \"Your Fathom Recap: Product Demo - Winefi\",\n  from: {\n    emailAddress: {\n      name: \"Fathom\",\n      address: \"recaps@fathom.video\"\n    }\n  },\n  receivedDateTime: \"2025-01-15T14:30:00Z\",\n  body: {\n    contentType: \"html\",\n    content: `<html>\n<body>\n<h1>Meeting Recap</h1>\n<h2>Product Demo - Winefi</h2>\n<p><strong>Date:</strong> January 15, 2025</p>\n<p><strong>Duration:</strong> 45 minutes</p>\n<p><strong>Participants:</strong> Sarah Chen (Winefi), John Smith (Sales Rep)</p>\n\n<h3>Summary</h3>\n<p>The meeting was a product demonstration for Winefi, a wine investment platform. Sarah Chen expressed strong interest in the analytics dashboard and portfolio tracking features. Key discussion points included integration capabilities with their existing CRM system, pricing tiers for enterprise customers, and timeline for onboarding.</p>\n\n<h3>Key Moments</h3>\n<ul>\n<li><strong>00:05:00</strong> - Sarah asked about API integration with Salesforce</li>\n<li><strong>00:12:30</strong> - Demonstrated portfolio analytics dashboard</li>\n<li><strong>00:20:00</strong> - Discussed enterprise pricing - Sarah mentioned budget of $50k/year</li>\n<li><strong>00:28:00</strong> - Sarah raised concern about data migration from legacy system</li>\n<li><strong>00:35:00</strong> - Agreed on follow-up meeting next week for technical deep-dive</li>\n<li><strong>00:40:00</strong> - Sarah requested case studies from similar wine industry clients</li>\n</ul>\n\n<h3>Action Items</h3>\n<ul>\n<li>Send enterprise pricing proposal by Friday</li>\n<li>Schedule technical deep-dive with engineering team</li>\n<li>Share wine industry case studies</li>\n<li>Prepare data migration assessment document</li>\n</ul>\n\n<h3>Transcript Highlights</h3>\n<p><em>Sarah:</em> \"We've been looking for a solution that can handle our portfolio of over 10,000 wine assets. The analytics you showed today are exactly what we need.\"</p>\n<p><em>John:</em> \"Absolutely, and with our enterprise tier, you'd get unlimited portfolio tracking plus dedicated API access for your Salesforce integration.\"</p>\n<p><em>Sarah:</em> \"The budget we have allocated is around $50,000 per year. Does that align with your enterprise pricing?\"</p>\n<p><em>John:</em> \"That's well within range. I'll put together a detailed proposal that fits your requirements.\"</p>\n</body>\n</html>`\n  }\n};\n\nreturn [{ json: testEmail }];"
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000004",
+      "name": "Test Fathom Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 560],
+      "notes": "Simulated Fathom recap email for testing the pipeline without needing real emails"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Fathom Email - Extract meeting details from HTML body\nconst item = $input.first().json;\n\nconst subject = item.subject || '';\nconst htmlBody = item.body?.content || item.body?.contentType === 'html' ? item.body.content : '';\nconst receivedDate = item.receivedDateTime || new Date().toISOString();\n\n// Extract meeting title from subject\nconst titleMatch = subject.match(/Your Fathom Recap:\\s*(.+)/i);\nconst meetingTitle = titleMatch ? titleMatch[1].trim() : subject;\n\n// Extract participant from HTML\nconst participantMatch = htmlBody.match(/Participants?:\\s*<\\/strong>\\s*([^<]+)/i);\nconst participant = participantMatch ? participantMatch[1].trim() : 'Unknown';\n\n// Extract meeting date from HTML\nconst dateMatch = htmlBody.match(/Date:\\s*<\\/strong>\\s*([^<]+)/i);\nconst meetingDate = dateMatch ? dateMatch[1].trim() : receivedDate;\n\n// Extract duration from HTML\nconst durationMatch = htmlBody.match(/Duration:\\s*<\\/strong>\\s*([^<]+)/i);\nconst duration = durationMatch ? durationMatch[1].trim() : 'Unknown';\n\nreturn [{\n  json: {\n    meetingTitle,\n    participant,\n    meetingDate,\n    duration,\n    htmlBody,\n    rawSubject: subject\n  }\n}];"
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000005",
+      "name": "Parse Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300],
+      "notes": "Extracts meetingTitle, participant, meetingDate, duration, htmlBody from Fathom email HTML using regex"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the meeting transcript/recap from Fathom:\n\nMeeting Title: {{ $json.meetingTitle }}\nParticipant: {{ $json.participant }}\nDate: {{ $json.meetingDate }}\nDuration: {{ $json.duration }}\n\nMeeting Content:\n{{ $json.htmlBody }}",
+        "options": {
+          "systemMessage": "=You are a professional meeting notes formatter. Your job is to take raw Fathom meeting transcripts and recaps and create executive-ready meeting summaries.\n\nFormat the output as a clean Markdown document with the following sections:\n\n# Meeting Summary: [Meeting Title]\n**Date:** [Date]\n**Duration:** [Duration]\n**Participants:** [Names]\n\n## Key Points\n- Bullet points of the most important topics discussed\n\n## Decisions Made\n- Any decisions that were reached during the meeting\n\n## Action Items\n| Action Item | Owner | Deadline |\n|-------------|-------|----------|\n| Item description | Person responsible | Due date if mentioned |\n\n## Client Profile\n- Company name and background\n- Key stakeholder(s) and their role\n- Budget/timeline indicators if mentioned\n\n## Discussion Summary\nA concise narrative summary of the meeting flow, key exchanges, and important context.\n\n## Next Steps\n- Numbered list of agreed-upon next steps with owners where applicable\n\n## Notable Quotes\n> Direct quotes that capture important sentiments or commitments\n\nRules:\n1. Be concise but thorough\n2. Use professional business language\n3. Highlight any monetary figures, deadlines, or commitments\n4. Flag any concerns or objections raised\n5. Output ONLY the formatted Markdown - no preamble or explanation\n6. Current date/time: {{ $now }}"
+        }
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000006",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [660, 300],
+      "notes": "Formats meeting transcript into professional executive-ready summary using GPT-4o-mini"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000007",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [660, 520]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-filename",
+              "name": "fileName",
+              "value": "={{ $('Parse Email').item.json.meetingTitle.replace(/[^a-zA-Z0-9\\s-]/g, '').replace(/\\s+/g, '_') }}_Summary.md",
+              "type": "string"
+            },
+            {
+              "id": "assign-filecontent",
+              "name": "fileContent",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-meetingtitle",
+              "name": "meetingTitle",
+              "value": "={{ $('Parse Email').item.json.meetingTitle }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-meetingdate",
+              "name": "meetingDate",
+              "value": "={{ $('Parse Email').item.json.meetingDate }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-participant",
+              "name": "participant",
+              "value": "={{ $('Parse Email').item.json.participant }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000008",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [880, 300],
+      "notes": "Creates fileName, fileContent, meetingTitle, meetingDate, participant fields for downstream nodes"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare CloudConvert job body for Markdown to PDF conversion\nconst fileName = $json.fileName || 'meeting_summary.md';\nconst fileContent = $json.fileContent || '';\nconst pdfFileName = fileName.replace('.md', '.pdf');\n\n// Base64 encode the markdown content\nconst base64Content = Buffer.from(fileContent, 'utf-8').toString('base64');\n\nconst jobBody = {\n  tasks: {\n    \"import-md\": {\n      operation: \"import/base64\",\n      file: base64Content,\n      filename: fileName\n    },\n    \"convert-to-pdf\": {\n      operation: \"convert\",\n      input: [\"import-md\"],\n      output_format: \"pdf\",\n      engine: \"office\"\n    },\n    \"export-pdf\": {\n      operation: \"export/url\",\n      input: [\"convert-to-pdf\"],\n      inline: false,\n      archive_multiple_files: false\n    }\n  },\n  tag: \"fathom-meeting-summary\"\n};\n\nreturn [{\n  json: {\n    jobBody,\n    pdfFileName,\n    originalFileName: fileName\n  }\n}];"
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000009",
+      "name": "Prepare CloudConvert Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, 300],
+      "notes": "Creates import/convert/export job payload for CloudConvert API (md to pdf)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloudconvert.com/v2/jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.jobBody) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000010",
+      "name": "CloudConvert Create Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1320, 300],
+      "notes": "POST to CloudConvert API to create md-to-pdf conversion job"
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "unit": "seconds"
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000011",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1540, 300],
+      "notes": "Wait 10 seconds for CloudConvert to process the conversion"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.cloudconvert.com/v2/jobs/{{ $('CloudConvert Create Job').item.json.data.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000012",
+      "name": "CloudConvert Get Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1760, 300],
+      "notes": "GET job status from CloudConvert to check if conversion is complete"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.data.tasks.filter(t => t.operation === 'export/url')[0].result.files[0].url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000013",
+      "name": "Download PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1980, 300],
+      "notes": "Downloads the converted PDF file from CloudConvert export URL"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "upload",
+        "site": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_SHAREPOINT_SITE_ID"
+        },
+        "folder": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_SHAREPOINT_FOLDER_ID"
+        },
+        "fileName": "={{ $('Format Output').item.json.fileName.replace('.md', '.pdf') }}",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000014",
+      "name": "Upload file",
+      "type": "n8n-nodes-base.microsoftSharePoint",
+      "typeVersion": 1,
+      "position": [2200, 300],
+      "notes": "Uploads the PDF to Microsoft SharePoint - replace YOUR_SHAREPOINT_SITE_ID and YOUR_SHAREPOINT_FOLDER_ID"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-status",
+              "name": "status",
+              "value": "Meeting summary PDF successfully created and uploaded to SharePoint",
+              "type": "string"
+            },
+            {
+              "id": "assign-meeting",
+              "name": "meetingTitle",
+              "value": "={{ $('Format Output').item.json.meetingTitle }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-timestamp",
+              "name": "completedAt",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000015",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2420, 300],
+      "notes": "Sets success status message after pipeline completion"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR_N8N_INSTANCE/webhook/sales-coach",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"meetingTitle\": \"{{ $json.meetingTitle }}\",\n  \"participant\": \"{{ $json.participant }}\",\n  \"meetingDate\": \"{{ $json.meetingDate }}\",\n  \"meetingSummary\": {{ JSON.stringify($json.fileContent) }},\n  \"salesRep\": \"Sales Representative\"\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "a1b2c3d4-1111-4000-8000-000000000016",
+      "name": "Trigger Sales Coach",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 520],
+      "continueOnFail": true,
+      "notes": "Triggers the Sales Coach workflow via webhook with meeting data - replace YOUR_N8N_INSTANCE"
+    }
+  ],
+  "connections": {
+    "Outlook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Test Fathom Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Parse Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Fathom Email": {
+      "main": [
+        [
+          {
+            "node": "Parse Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Email": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "main": [
+        [
+          {
+            "node": "Prepare CloudConvert Body",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Trigger Sales Coach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare CloudConvert Body": {
+      "main": [
+        [
+          {
+            "node": "CloudConvert Create Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CloudConvert Create Job": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "CloudConvert Get Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CloudConvert Get Status": {
+      "main": [
+        [
+          {
+            "node": "Download PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download PDF": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "active": false,
+  "meta": {
+    "instanceId": ""
+  }
+}

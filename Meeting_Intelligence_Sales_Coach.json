@@ -1,0 +1,544 @@
+{
+  "name": "Meeting Intelligence Sales Coach",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sales-coach",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000001",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 300],
+      "webhookId": "",
+      "notes": "Receives POST requests from the Fathom Meeting Summary Pipeline at /webhook/sales-coach"
+    },
+    {
+      "parameters": {},
+      "id": "b2c3d4e5-2222-4000-8000-000000000002",
+      "name": "Manual Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 560]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "test-title",
+              "name": "meetingTitle",
+              "value": "Product Demo - Winefi",
+              "type": "string"
+            },
+            {
+              "id": "test-participant",
+              "name": "participant",
+              "value": "Sarah Chen (Winefi)",
+              "type": "string"
+            },
+            {
+              "id": "test-salesrep",
+              "name": "salesRep",
+              "value": "John Smith",
+              "type": "string"
+            },
+            {
+              "id": "test-date",
+              "name": "meetingDate",
+              "value": "January 15, 2025",
+              "type": "string"
+            },
+            {
+              "id": "test-summary",
+              "name": "meetingSummary",
+              "value": "# Meeting Summary: Product Demo - Winefi\n**Date:** January 15, 2025\n**Duration:** 45 minutes\n**Participants:** Sarah Chen (Winefi), John Smith (Sales Rep)\n\n## Key Points\n- Winefi is a wine investment platform seeking analytics and portfolio tracking solutions\n- Sarah Chen expressed strong interest in the analytics dashboard\n- Integration with Salesforce CRM is a key requirement\n- Budget indication of $50,000/year for enterprise tier\n- Data migration from legacy system is a concern\n\n## Decisions Made\n- Agreed to schedule a technical deep-dive meeting next week\n- Enterprise pricing proposal to be sent by Friday\n\n## Action Items\n| Action Item | Owner | Deadline |\n|-------------|-------|----------|\n| Send enterprise pricing proposal | John Smith | Friday |\n| Schedule technical deep-dive | John Smith | Next week |\n| Share wine industry case studies | John Smith | Before next meeting |\n| Prepare data migration assessment | Engineering Team | Before deep-dive |\n\n## Client Profile\n- **Company:** Winefi - wine investment platform\n- **Key Stakeholder:** Sarah Chen\n- **Portfolio:** 10,000+ wine assets\n- **Budget:** ~$50,000/year\n- **Key Need:** Analytics dashboard + portfolio tracking + CRM integration\n\n## Discussion Summary\nThe meeting focused on demonstrating the platform's capabilities to Winefi. Sarah showed particular enthusiasm for the analytics dashboard and portfolio tracking features. The discussion covered API integration with their existing Salesforce CRM, enterprise pricing tiers, and the timeline for onboarding. A concern was raised about data migration from their legacy system, which will need to be addressed in the follow-up technical session.\n\n## Next Steps\n1. John to send enterprise pricing proposal by Friday\n2. Schedule technical deep-dive with engineering team for next week\n3. John to share wine industry case studies before the next meeting\n4. Engineering team to prepare data migration assessment\n\n## Notable Quotes\n> \"We've been looking for a solution that can handle our portfolio of over 10,000 wine assets. The analytics you showed today are exactly what we need.\" - Sarah Chen\n> \"The budget we have allocated is around $50,000 per year. Does that align with your enterprise pricing?\" - Sarah Chen",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000003",
+      "name": "Test Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 560],
+      "notes": "Demo meeting data about Winefi for testing the Sales Coach pipeline without the upstream workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this sales meeting and provide coaching feedback:\n\n**Meeting Title:** {{ $json.meetingTitle }}\n**Participant/Prospect:** {{ $json.participant }}\n**Sales Rep:** {{ $json.salesRep }}\n**Meeting Date:** {{ $json.meetingDate }}\n\n**Meeting Summary:**\n{{ $json.meetingSummary }}",
+        "options": {
+          "systemMessage": "=You are an elite Sales Coach AI with deep expertise in B2B sales methodology, consultative selling, and deal strategy. Your role is to analyze sales meeting summaries and provide actionable coaching feedback that helps sales reps close more deals.\n\n## Your Process\n\n1. **FIRST**: Search the company knowledge base for any existing information about the prospect company, previous interactions, competitor intelligence, or relevant case studies. Use this context to enrich your analysis.\n\n2. **THEN**: Analyze the meeting systematically using the framework below.\n\n## Scoring Framework\n\nScore each dimension from 1-10 with specific justification:\n\n### 1. Discovery Quality (1-10)\n- Did the rep uncover business pain, impact, and urgency?\n- Were open-ended questions used effectively?\n- Was the decision-making process explored?\n\n### 2. Value Proposition Delivery (1-10)\n- Was the solution positioned against specific pain points?\n- Were features translated into business outcomes?\n- Was ROI or business case discussed?\n\n### 3. Objection Handling (1-10)\n- Were concerns acknowledged and addressed?\n- Was the rep defensive or consultative?\n- Were objections turned into opportunities?\n\n### 4. Next Steps & Commitment (1-10)\n- Were clear, time-bound next steps established?\n- Was mutual commitment obtained?\n- Is there a clear path to close?\n\n### 5. Relationship Building (1-10)\n- Was rapport established naturally?\n- Did the rep show genuine curiosity about the prospect's business?\n- Was the conversation collaborative or transactional?\n\n## Output Format\n\nStructure your analysis as a Markdown document:\n\n# Sales Coaching Report: [Meeting Title]\n**Date:** [Date]\n**Rep:** [Sales Rep]\n**Prospect:** [Participant]\n\n## Overall Score: [X/50]\n\n## Scorecard\n| Dimension | Score | Key Observation |\n|-----------|-------|----------------|\n| Discovery | X/10 | Brief note |\n| Value Prop | X/10 | Brief note |\n| Objection Handling | X/10 | Brief note |\n| Next Steps | X/10 | Brief note |\n| Relationship | X/10 | Brief note |\n\n## What Went Well\n- Specific examples with exact quotes from the meeting\n- Highlight effective techniques used\n\n## Areas for Improvement\n- Specific feedback with exact quotes showing missed opportunities\n- For each area, provide the EXACT phrase the rep should have used instead\n\n## Suggested Phrases for Next Meeting\nProvide 3-5 specific phrases the rep should use in the follow-up:\n1. \"[Exact phrase]\" - [When to use it and why]\n2. \"[Exact phrase]\" - [When to use it and why]\n...\n\n## Deal Intelligence\n| Factor | Assessment |\n|--------|------------|\n| Deal Stage | [Current stage] |\n| Win Probability | [X%] |\n| Key Risk | [Primary risk to deal] |\n| Champion Status | [Is there an internal champion?] |\n| Decision Timeline | [Expected timeline] |\n| Competitive Threat | [Known competitors] |\n| Budget Alignment | [Budget fit assessment] |\n\n## Recommended Strategy for Next Meeting\nA brief paragraph outlining the optimal approach for the follow-up meeting, including:\n- Key topics to address\n- Questions to ask\n- Materials to prepare\n- Stakeholders to involve\n\n## Rules\n1. Be direct and actionable - no generic advice\n2. Always reference specific moments from the meeting\n3. Provide exact phrases, not vague suggestions\n4. Consider the full deal context, not just this meeting\n5. Flag any red flags or deal risks immediately\n6. Output ONLY the formatted Markdown - no preamble\n7. Current date/time: {{ $now }}"
+        }
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000004",
+      "name": "Sales Coach Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [440, 300],
+      "notes": "Elite Sales Coach AI that scores calls, provides specific feedback with quotes, and creates Deal Intelligence"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-5.2-pro"
+        },
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000005",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [340, 520]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "companyKnowledgeBase",
+        "toolDescription": "Search the company knowledge base for information about prospects, clients, competitors, case studies, pricing guidelines, product documentation, and previous interaction history. Use this BEFORE analyzing any meeting to enrich your coaching with relevant context.",
+        "tableName": {
+          "__rl": true,
+          "mode": "id",
+          "value": "documents"
+        },
+        "topK": 10,
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000006",
+      "name": "Company Knowledge Base",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [540, 520],
+      "notes": "Supabase Vector Store in retrieve-as-tool mode - searches company knowledge base for prospect/competitor intelligence"
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000007",
+      "name": "OpenAI Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [540, 720]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-filename",
+              "name": "fileName",
+              "value": "={{ $('Sales Coach Agent').first().json.meetingTitle ? $('Sales Coach Agent').first().json.meetingTitle : $json.meetingTitle ? $json.meetingTitle : 'Sales_Coaching' }}_Sales_Coach_Report.md",
+              "type": "string"
+            },
+            {
+              "id": "assign-filecontent",
+              "name": "fileContent",
+              "value": "={{ $('Sales Coach Agent').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-meetingtitle",
+              "name": "meetingTitle",
+              "value": "={{ $json.meetingTitle }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-participant",
+              "name": "participant",
+              "value": "={{ $json.participant }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000008",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [660, 300],
+      "notes": "Prepares fileName, fileContent, meetingTitle, participant for the PDF conversion pipeline"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare CloudConvert job body for Markdown to PDF conversion\nconst fileName = $json.fileName || 'sales_coach_report.md';\nconst fileContent = $json.fileContent || '';\nconst pdfFileName = fileName.replace('.md', '.pdf');\n\n// Base64 encode the markdown content\nconst base64Content = Buffer.from(fileContent, 'utf-8').toString('base64');\n\nconst jobBody = {\n  tasks: {\n    \"import-md\": {\n      operation: \"import/base64\",\n      file: base64Content,\n      filename: fileName\n    },\n    \"convert-to-pdf\": {\n      operation: \"convert\",\n      input: [\"import-md\"],\n      output_format: \"pdf\",\n      engine: \"office\"\n    },\n    \"export-pdf\": {\n      operation: \"export/url\",\n      input: [\"convert-to-pdf\"],\n      inline: false,\n      archive_multiple_files: false\n    }\n  },\n  tag: \"sales-coach-report\"\n};\n\nreturn [{\n  json: {\n    jobBody,\n    pdfFileName,\n    originalFileName: fileName\n  }\n}];"
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000009",
+      "name": "Prepare CloudConvert Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 300],
+      "notes": "Creates import/convert/export job payload for CloudConvert API (md to pdf)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloudconvert.com/v2/jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.jobBody) }}",
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000010",
+      "name": "CloudConvert Create Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 300],
+      "notes": "POST to CloudConvert API to create md-to-pdf conversion job"
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "unit": "seconds"
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000011",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1320, 300],
+      "notes": "Wait 10 seconds for CloudConvert to process the conversion"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.cloudconvert.com/v2/jobs/{{ $('CloudConvert Create Job').item.json.data.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000012",
+      "name": "CloudConvert Get Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, 300],
+      "notes": "GET job status from CloudConvert to check if conversion is complete"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.data.tasks.filter(t => t.operation === 'export/url')[0].result.files[0].url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000013",
+      "name": "Download PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1760, 300],
+      "notes": "Downloads the converted PDF file from CloudConvert export URL"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "upload",
+        "site": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_SHAREPOINT_SITE_ID"
+        },
+        "folder": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_SHAREPOINT_FOLDER_ID"
+        },
+        "fileName": "={{ $('Format Output').item.json.fileName.replace('.md', '.pdf') }}",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000014",
+      "name": "Upload to SharePoint",
+      "type": "n8n-nodes-base.microsoftSharePoint",
+      "typeVersion": 1,
+      "position": [1980, 300],
+      "notes": "Uploads the Sales Coach PDF report to Microsoft SharePoint - replace YOUR_SHAREPOINT_SITE_ID and YOUR_SHAREPOINT_FOLDER_ID"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-status",
+              "name": "status",
+              "value": "Sales coaching report PDF successfully created and uploaded to SharePoint",
+              "type": "string"
+            },
+            {
+              "id": "assign-meeting",
+              "name": "meetingTitle",
+              "value": "={{ $('Format Output').item.json.meetingTitle }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-participant",
+              "name": "participant",
+              "value": "={{ $('Format Output').item.json.participant }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-timestamp",
+              "name": "completedAt",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000015",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2200, 300],
+      "notes": "Sets success status message after Sales Coach pipeline completion"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "pass-title",
+              "name": "meetingTitle",
+              "value": "={{ $json.body.meetingTitle }}",
+              "type": "string"
+            },
+            {
+              "id": "pass-participant",
+              "name": "participant",
+              "value": "={{ $json.body.participant }}",
+              "type": "string"
+            },
+            {
+              "id": "pass-salesrep",
+              "name": "salesRep",
+              "value": "={{ $json.body.salesRep }}",
+              "type": "string"
+            },
+            {
+              "id": "pass-date",
+              "name": "meetingDate",
+              "value": "={{ $json.body.meetingDate }}",
+              "type": "string"
+            },
+            {
+              "id": "pass-summary",
+              "name": "meetingSummary",
+              "value": "={{ $json.body.meetingSummary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2c3d4e5-2222-4000-8000-000000000016",
+      "name": "Extract Webhook Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 300],
+      "notes": "Extracts meeting data from the incoming webhook request body"
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Webhook Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Webhook Data": {
+      "main": [
+        [
+          {
+            "node": "Sales Coach Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Test": {
+      "main": [
+        [
+          {
+            "node": "Test Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Data": {
+      "main": [
+        [
+          {
+            "node": "Sales Coach Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sales Coach Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company Knowledge Base": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Coach Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Company Knowledge Base",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Coach Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "main": [
+        [
+          {
+            "node": "Prepare CloudConvert Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare CloudConvert Body": {
+      "main": [
+        [
+          {
+            "node": "CloudConvert Create Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CloudConvert Create Job": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "CloudConvert Get Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CloudConvert Get Status": {
+      "main": [
+        [
+          {
+            "node": "Download PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download PDF": {
+      "main": [
+        [
+          {
+            "node": "Upload to SharePoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to SharePoint": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "active": false,
+  "meta": {
+    "instanceId": ""
+  }
+}
